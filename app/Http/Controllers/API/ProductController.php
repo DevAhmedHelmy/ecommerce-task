@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\API\ProductRequest;
+use App\Http\Resources\API\ProductResource;
 
 class ProductController extends Controller
 {
@@ -15,7 +17,7 @@ class ProductController extends Controller
      */
     public function index()
     {
-        //
+        return ProductResource::collection(Product::paginate(10));
     }
 
     /**
@@ -26,7 +28,8 @@ class ProductController extends Controller
      */
     public function store(ProductRequest $request)
     {
-        //
+        $product = Product::create($request->all());
+        return response()->json(['message' => 'Saved', 'data' => new ProductResource($product)], 200);
     }
 
     /**
@@ -35,9 +38,9 @@ class ProductController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(Product $product)
     {
-        //
+        return response()->json(['message' => 'Show', 'data' => new ProductResource($product)], 200);
     }
 
     /**
@@ -47,9 +50,10 @@ class ProductController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(ProductRequest $request, $id)
+    public function update(ProductRequest $request, Product $product)
     {
-        //
+        $product->update($request->all());
+        return response()->json(['message' => 'Updated', 'data' => new ProductResource($product)], 200);
     }
 
     /**
@@ -58,8 +62,9 @@ class ProductController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Product $product)
     {
-        //
+        $product->delete();
+        return response()->json(['message' => 'Deleted'], 200);
     }
 }
