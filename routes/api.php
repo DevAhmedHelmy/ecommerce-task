@@ -3,7 +3,6 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-
 use App\Http\Controllers\Auth\ApiAuthController;
 
 /*
@@ -17,10 +16,8 @@ use App\Http\Controllers\Auth\ApiAuthController;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
-Route::apiResource('products', ProductController::class);
+
+
 Route::group(['middleware' => ['cors']], function () {
 
     // ...
@@ -32,7 +29,7 @@ Route::group(['middleware' => ['cors']], function () {
     // ...
 
     Route::middleware('auth:api')->group(function () {
-
+        Route::apiResource('products', ProductController::class);
 
         // our routes to be protected will go in here
         Route::post('/logout', [ApiAuthController::class, 'logout'])->name('logout.api');
