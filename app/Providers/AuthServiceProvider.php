@@ -25,7 +25,8 @@ class AuthServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->registerPolicies();
-        Passport::$ignoreCsrfToken = true;
+
         Passport::routes();
+        Passport::$ignoreCsrfToken = true;
     }
 }
