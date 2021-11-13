@@ -26,7 +26,7 @@ class ApiAuthController extends Controller
 
         $accessToken = $user->createToken('authToken')->accessToken;
 
-        return response(['user' => $user, 'access_token' => $accessToken->token]);
+        return response()->json(['user' => $user, 'access_token' => $accessToken->token], 200);
     }
 
     public function login(Request $request)
@@ -37,13 +37,14 @@ class ApiAuthController extends Controller
             'email' => 'email|required',
             'password' => 'required'
         ]);
-
-        if (!auth()->attempt($loginData)) {
-            return response(['message' => 'Invalid Credentials']);
+        if (!auth()->attempt([
+            'email' => $request->email,
+            'password' => $request->password
+        ])) {
+            return response()->json(['message' => 'The Email or The Password Wrong'], 401);
         }
 
         $accessToken = auth()->user()->createToken('authToken')->accessToken;
-
-        return response(['user' => auth()->user(), 'access_token' => $accessToken->token]);
+        return response()->json(['user' => auth()->user(), 'access_token' => $accessToken->token], 200);
     }
 }
