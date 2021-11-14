@@ -29,21 +29,27 @@ class CartController extends Controller
     public function store(CartRequest $request)
     {
 
-        $user_id  = auth('api')->user();
-        dd(auth('api')->user());
-        if ($user_id !== null) {
-            $cart =  Cart::where('user_id', $user_id->id)->whereStatus('open')->first();
-        } else {
 
-            $cart = Cart::create(['user_id' => $user_id->id ?? null]);
+        $user_id  = auth('sanctum')->user();
+
+        $cart =  Cart::where('user_id', $user_id->id)->whereStatus('open')->first();
+        if ($cart !== null) {
+            $cart->items()->updateOrCreate([
+                "product_id" => $request->product_id,
+                "quantity" => $request->quantity,
+                "price" => $request->price,
+                'subTotal' => $request->price * $request->quantity
+            ]);
+        } else {
+            $cart = Cart::create(['user_id' => $user_id->id]);
+            $cart->items()->create([
+                "product_id" => $request->product_id,
+                "quantity" => $request->quantity,
+                "price" => $request->price,
+                'subTotal' => $request->price * $request->quantity
+            ]);
         }
 
-        $cart->items()->create([
-            "product_id" => $request->product_id,
-            "quantity" => $request->quantity,
-            "price" => $request->price,
-            'subTotal' => $request->price * $request->quantity
-        ]);
         $total = $cart->items()->sum('subTotal');
         $cart->update(['total' => $total]);
         return response()->json(['data' => new CartResource($cart), 'message' => 'Saved'], 200);

@@ -47,22 +47,15 @@ class ApiAuthController extends Controller
         }
         return response()->json(['message' => 'The Email or The Password Wrong'], 401);
     }
-    // public function login(Request $request)
-    // {
+    public function logout()
+    {
+        if (!auth()->user()) {
+            return response()->json(['message' => 'Not authorized'], 401);
+        }
 
-
-    //     $loginData = $request->validate([
-    //         'email' => 'email|required',
-    //         'password' => 'required'
-    //     ]);
-    //     if (!auth()->attempt([
-    //         'email' => $request->email,
-    //         'password' => $request->password
-    //     ])) {
-    //         return response()->json(['message' => 'The Email or The Password Wrong'], 401);
-    //     }
-
-    //     $accessToken = auth()->user()->createToken('authToken')->accessToken;
-    //     return response()->json(['user' => auth()->user(), 'access_token' => $accessToken->token], 200);
-    // }
+        auth()->user()->tokens->each(function ($token, $key) {
+            $token->delete();
+        });
+        return response()->json('Logged Out', 200);
+    }
 }
