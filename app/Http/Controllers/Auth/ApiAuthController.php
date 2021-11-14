@@ -25,9 +25,9 @@ class ApiAuthController extends Controller
 
         $user = User::create($validatedData);
 
-        $accessToken = $user->createToken('authToken')->accessToken;
 
-        return response()->json(['user' => $user, 'access_token' => $accessToken->token], 200);
+
+        return response()->json(['data' => $user, 'access_token' => $user->createToken('access_token')->plainTextToken], 200);
     }
     public function login(Request $request)
     {

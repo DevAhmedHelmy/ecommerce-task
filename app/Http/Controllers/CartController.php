@@ -29,8 +29,15 @@ class CartController extends Controller
     public function store(CartRequest $request)
     {
 
+        $user_id  = auth('api')->user();
+        dd(auth('api')->user());
+        if ($user_id !== null) {
+            $cart =  Cart::where('user_id', $user_id->id)->whereStatus('open')->first();
+        } else {
 
-        $cart = Cart::create(['user_id' => Auth::id() ?? null]);
+            $cart = Cart::create(['user_id' => $user_id->id ?? null]);
+        }
+
         $cart->items()->create([
             "product_id" => $request->product_id,
             "quantity" => $request->quantity,
@@ -91,6 +98,9 @@ class CartController extends Controller
 
     public function removeItem($cartId, $itemId)
     {
-        
+    }
+
+    public function incrmentItem()
+    {
     }
 }

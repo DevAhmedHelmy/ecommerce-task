@@ -27,9 +27,9 @@ Route::group(['middleware' => ['cors']], function () {
     Route::post('/register', [ApiAuthController::class, 'register'])->name('register.api');
 
     // ...
-    Route::apiResource('products', ProductController::class);
-    Route::apiResource('carts', CartController::class);
     Route::middleware('auth:sanctum')->group(function () {
+        Route::apiResource('products', ProductController::class);
+        Route::apiResource('carts', CartController::class);
 
 
         // our routes to be protected will go in here
