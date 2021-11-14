@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
@@ -28,23 +29,40 @@ class ApiAuthController extends Controller
 
         return response()->json(['user' => $user, 'access_token' => $accessToken->token], 200);
     }
-
     public function login(Request $request)
     {
-
-
         $loginData = $request->validate([
             'email' => 'email|required',
             'password' => 'required'
         ]);
-        if (!auth()->attempt([
-            'email' => $request->email,
-            'password' => $request->password
-        ])) {
-            return response()->json(['message' => 'The Email or The Password Wrong'], 401);
-        }
+        if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
 
-        $accessToken = auth()->user()->createToken('authToken')->accessToken;
-        return response()->json(['user' => auth()->user(), 'access_token' => $accessToken->token], 200);
+            $user = Auth::user();
+            $user->tokens()->delete();
+
+            return [
+                'data' => $user,
+                'access_token' => $user->createToken('access_token')->plainTextToken,
+            ];
+        }
+        return response()->json(['message' => 'The Email or The Password Wrong'], 401);
     }
+    // public function login(Request $request)
+    // {
+
+
+    //     $loginData = $request->validate([
+    //         'email' => 'email|required',
+    //         'password' => 'required'
+    //     ]);
+    //     if (!auth()->attempt([
+    //         'email' => $request->email,
+    //         'password' => $request->password
+    //     ])) {
+    //         return response()->json(['message' => 'The Email or The Password Wrong'], 401);
+    //     }
+
+    //     $accessToken = auth()->user()->createToken('authToken')->accessToken;
+    //     return response()->json(['user' => auth()->user(), 'access_token' => $accessToken->token], 200);
+    // }
 }
