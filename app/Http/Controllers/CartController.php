@@ -6,10 +6,16 @@ use Illuminate\Http\Request;
 use App\Http\Requests\CartRequest;
 use App\Http\Resources\CartResource;
 use App\Models\Cart;
+use App\Models\CartItem;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class CartController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth:sanctum')->except('index');
+    }
     /**
      * Display a listing of the resource.
      *
@@ -68,6 +74,14 @@ class CartController extends Controller
         return response()->json(['data' => $cart, 'message' => 'Show Cart'], 200);
     }
 
+    public function getAuthUser()
+    {
+
+        $cart = Cart::with('items')->whereStatus('open')->where('user_id', auth('sanctum')->user()->id)->first();
+
+        return response()->json(['data' => $cart, 'message' => 'Show Cart'], 200);
+    }
+
     /**
      * Update the specified resource in storage.
      *
@@ -104,9 +118,47 @@ class CartController extends Controller
 
     public function removeItem($cartId, $itemId)
     {
+        $cart = Cart::with('items')->whereStatus('open')->whereId($cartId)->first();
+        $cartItem = $cart->items()->where('product_id', $itemId)->delete();
+
+        $total = $cart->items()->sum('subTotal');
+        $cart->update(['total' => $total]);
+        return response()->json(['data' => new CartResource($cart), 'message' => 'Update Cart'], 200);
     }
 
-    public function incrmentItem()
+    public function incrmentItem($cartId, $itemId)
     {
+        $cart = Cart::with('items')->whereStatus('open')->whereId($cartId)->first();
+        $cartItem = $cart->items()->where('product_id', $itemId)->first();
+
+        $cartItem->update([
+
+            "quantity" => $cartItem->quantity + 1,
+            "price" => $cartItem->price,
+            'subTotal' => $cartItem->price * ($cartItem->quantity + 1)
+        ]);
+
+        $total = $cart->items()->sum('subTotal');
+        $cart->update(['total' => $total]);
+        return response()->json(['data' => new CartResource($cart), 'message' => 'Update Cart'], 200);
+    }
+    public function decrmentItem($cartId, $itemId)
+    {
+        $cart = Cart::with('items')->whereStatus('open')->whereId($cartId)->first();
+        $cartItem = $cart->items()->where('product_id', $itemId)->first();
+        if ($cartItem->quantity == 1) {
+            return response()->json(['message' => 'can not decrmentItem Cart'], 422);
+        } else {
+
+            $cartItem->update([
+                "quantity" => $cartItem->quantity - 1,
+                "price" => $cartItem->price,
+                'subTotal' => $cartItem->price * ($cartItem->quantity - 1)
+            ]);
+        }
+
+        $total = $cart->items()->sum('subTotal');
+        $cart->update(['total' => $total]);
+        return response()->json(['data' => new CartResource($cart), 'message' => 'Update Cart'], 200);
     }
 }
